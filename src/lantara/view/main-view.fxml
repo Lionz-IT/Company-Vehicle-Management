@@ -1,14 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="CONTROLLER_NAME"
-            prefHeight="400.0" prefWidth="600.0">
+<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="lantara.controller.MainViewController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+    </padding>
 
-</AnchorPane>
+    <Label text="Sistem Manajemen Armada - LANTARA">
+        <font>
+            <Font name="System Bold" size="18.0"/>
+        </font>
+    </Label>
+
+    <TableView fx:id="vehicleTable" prefHeight="200.0" prefWidth="600.0">
+        <columns>
+            <TableColumn fx:id="colNomorPolisi" prefWidth="100.0" text="No. Polisi"/>
+            <TableColumn fx:id="colMerek" prefWidth="100.0" text="Merek"/>
+            <TableColumn fx:id="colModel" prefWidth="100.0" text="Model"/>
+            <TableColumn fx:id="colTahun" prefWidth="75.0" text="Tahun"/>
+            <TableColumn fx:id="colStatus" prefWidth="125.0" text="Status"/>
+        </columns>
+    </TableView>
+
+    <Button onAction="#handleRefreshButton" text="Muat Ulang Data Kendaraan" />
+</VBox>
