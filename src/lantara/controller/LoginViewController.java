@@ -29,12 +29,10 @@ public class LoginViewController {
     private List<User> users;
 
     public LoginViewController() {
-        // Inisialisasi daftar pengguna.
-        // PENTING: Dalam aplikasi nyata, data ini harus berasal dari database
-        // dan password harus di-hash, bukan teks biasa.
         users = new ArrayList<>();
-        users.add(new User("manajer", "manajer123"));
-        users.add(new User("staf", "staf123"));
+        // Tambahkan peran "MANAJER" atau "STAF"
+        users.add(new User("manajer", "manajer123", "MANAJER"));
+        users.add(new User("staf", "staf123", "STAF"));
     }
 
     @FXML
@@ -42,29 +40,38 @@ public class LoginViewController {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
-        if (authenticate(username, password)) {
-            // Jika berhasil, tutup jendela login dan buka jendela utama
+        User authenticatedUser = authenticate(username, password);
+
+        if (authenticatedUser != null) {
+            // Jika berhasil, kirim data user ke jendela utama
             closeLoginWindow();
-            openMainWindow();
+            openMainWindow(authenticatedUser); // Kirim objek User
         } else {
-            // Jika gagal, tampilkan pesan error
             errorMessageLabel.setText("Username atau password salah!");
         }
     }
 
-    private boolean authenticate(String username, String password) {
+    // Mengembalikan objek User jika berhasil, atau null jika gagal
+    private User authenticate(String username, String password) {
         for (User user : users) {
             if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
-                return true; // Pengguna ditemukan dan password cocok
+                return user; // Kembalikan objek User yang cocok
             }
         }
-        return false; // Gagal otentikasi
+        return null; // Gagal otentikasi
     }
 
-    private void openMainWindow() {
+    // Menerima objek User untuk dikirim ke controller utama
+    private void openMainWindow(User user) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("view/main-view.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+
+            // Ambil controller dari jendela utama
+            MainViewController mainViewController = fxmlLoader.getController();
+            // Kirim data user ke MainViewController
+            mainViewController.initData(user);
+
             Stage mainStage = new Stage();
             mainStage.setTitle("LANTARA - Manajemen Armada");
             mainStage.setScene(scene);

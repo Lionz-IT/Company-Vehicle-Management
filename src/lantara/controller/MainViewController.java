@@ -3,16 +3,18 @@ package lantara.controller;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import lantara.model.PassengerCar;
 import lantara.model.Truck;
+import lantara.model.User;
 import lantara.model.Vehicle;
 
 public class MainViewController {
 
-    // Anotasi @FXML menghubungkan variabel ini dengan komponen di FXML
     @FXML
     private TableView<Vehicle> vehicleTable;
     @FXML
@@ -26,40 +28,62 @@ public class MainViewController {
     @FXML
     private TableColumn<Vehicle, String> colStatus;
 
-    private final ObservableList<Vehicle> vehicleList = FXCollections.observableArrayList();
+    // Variabel baru untuk mengontrol tombol
+    @FXML
+    private HBox buttonContainer;
+    @FXML
+    private Button addNewVehicleButton;
 
-    // Metode ini akan dipanggil secara otomatis setelah FXML dimuat
+    private final ObservableList<Vehicle> vehicleList = FXCollections.observableArrayList();
+    private User currentUser; // Variabel untuk menyimpan user yang login
+
     @FXML
     public void initialize() {
-        // Mengatur setiap kolom tabel untuk mengambil data dari atribut kelas Vehicle
         colNomorPolisi.setCellValueFactory(new PropertyValueFactory<>("nomorPolisi"));
         colMerek.setCellValueFactory(new PropertyValueFactory<>("merek"));
         colModel.setCellValueFactory(new PropertyValueFactory<>("model"));
         colTahun.setCellValueFactory(new PropertyValueFactory<>("tahun"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        // Memuat data awal saat aplikasi pertama kali dijalankan
         loadVehicleData();
+        
+        // Sembunyikan tombol secara default saat FXML pertama dimuat
+        if (buttonContainer != null) {
+            buttonContainer.setVisible(false);
+            buttonContainer.setManaged(false);
+        }
     }
 
-    // Metode ini dipanggil saat tombol "Muat Ulang Data" ditekan
+    // Metode baru untuk menerima data dari LoginViewController
+    public void initData(User user) {
+        this.currentUser = user;
+        
+        // Tampilkan tombol hanya jika peran pengguna adalah MANAJER
+        if (currentUser != null && "MANAJER".equals(currentUser.getRole())) {
+            if (buttonContainer != null) {
+                buttonContainer.setVisible(true);
+                buttonContainer.setManaged(true);
+            }
+        }
+    }
+
     @FXML
     protected void handleRefreshButton() {
         System.out.println("Tombol refresh ditekan!");
         loadVehicleData();
     }
+    
+    @FXML
+    protected void handleAddNewVehicle() {
+        System.out.println("Tombol 'Tambah Kendaraan Baru' diklik oleh " + currentUser.getUsername());
+        // Logika untuk membuka jendela tambah kendaraan baru
+    }
 
-    // Metode untuk memuat data kendaraan (diambil dari Main lama Anda)
     private void loadVehicleData() {
-        // Membersihkan data lama sebelum memuat yang baru
         vehicleList.clear();
-
-        // Menambahkan data contoh
         vehicleList.add(new PassengerCar("L 1234 AB", "Toyota", "Avanza", 2022, 7));
         vehicleList.add(new Truck("B 9876 CD", "Mitsubishi", "Fuso", 2020, 10));
         vehicleList.add(new PassengerCar("W 5555 XY", "Honda", "Brio", 2023, 5));
-
-        // Menampilkan data ke tabel
         vehicleTable.setItems(vehicleList);
     }
 }

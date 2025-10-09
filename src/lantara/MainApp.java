@@ -10,10 +10,10 @@ import java.io.IOException;
 public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        // Mengubah agar memuat tampilan login terlebih dahulu
+        // UBAH INI: Arahkan ke login-view.fxml sebagai tampilan awal
         FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("view/login-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 400, 300); // Sesuaikan ukuran jendela login
-        stage.setTitle("Login - LANTARA"); // Ganti judul jendela
+        stage.setTitle("LANTARA - Login"); // Ganti judul jendela
         stage.setScene(scene);
         stage.show();
     }
