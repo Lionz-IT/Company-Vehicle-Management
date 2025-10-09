@@ -10,10 +10,10 @@ import java.io.IOException;
 public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        // Memuat file FXML dari folder view
-        FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("view/main-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 620, 400);
-        stage.setTitle("LANTARA - Manajemen Armada");
+        // Mengubah agar memuat tampilan login terlebih dahulu
+        FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("view/login-view.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 400, 300); // Sesuaikan ukuran jendela login
+        stage.setTitle("Login - LANTARA"); // Ganti judul jendela
         stage.setScene(scene);
         stage.show();
     }
