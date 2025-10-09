@@ -19,6 +19,10 @@ import lantara.model.Truck;
 import lantara.model.User;
 import lantara.model.Vehicle;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class MainViewController {
@@ -46,24 +50,24 @@ public class MainViewController {
     // Variabel untuk data
     private final ObservableList<Vehicle> vehicleList = FXCollections.observableArrayList();
     private User currentUser;
+    private final String DATA_FILE = "vehicles.csv"; // Nama file untuk menyimpan data
 
     /**
      * Metode ini dipanggil secara otomatis setelah FXML dimuat.
-     * Menginisialisasi tabel dan menyembunyikan tombol khusus manajer.
      */
     @FXML
     public void initialize() {
-        // Mengatur setiap kolom tabel untuk mengambil data dari atribut kelas Vehicle
+        // Mengatur setiap kolom tabel
         colNomorPolisi.setCellValueFactory(new PropertyValueFactory<>("nomorPolisi"));
         colMerek.setCellValueFactory(new PropertyValueFactory<>("merek"));
         colModel.setCellValueFactory(new PropertyValueFactory<>("model"));
         colTahun.setCellValueFactory(new PropertyValueFactory<>("tahun"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        // Memuat data awal saat aplikasi pertama kali dijalankan
-        loadVehicleData();
+        // Memuat data dari file saat aplikasi dimulai
+        loadDataFromFile();
 
-        // Sembunyikan container tombol secara default
+        // Sembunyikan tombol khusus manajer secara default
         if (buttonContainer != null) {
             buttonContainer.setVisible(false);
             buttonContainer.setManaged(false);
@@ -71,13 +75,12 @@ public class MainViewController {
     }
 
     /**
-     * Menerima data pengguna dari LoginViewController dan mengatur UI sesuai peran.
-     * @param user Pengguna yang berhasil login.
+     * Menerima data pengguna dari LoginViewController.
      */
     public void initData(User user) {
         this.currentUser = user;
 
-        // Tampilkan tombol hanya jika peran pengguna adalah MANAJER
+        // Tampilkan tombol hanya jika peran adalah MANAJER
         if (currentUser != null && "MANAJER".equals(currentUser.getRole())) {
             if (buttonContainer != null) {
                 buttonContainer.setVisible(true);
@@ -87,36 +90,34 @@ public class MainViewController {
     }
 
     /**
-     * Dipanggil saat tombol "Muat Ulang Data" ditekan.
+     * Memuat ulang data dari file.
      */
     @FXML
     protected void handleRefreshButton() {
         System.out.println("Tombol refresh ditekan!");
-        loadVehicleData();
+        loadDataFromFile();
     }
 
     /**
-     * Dipanggil saat tombol "Tambah Kendaraan Baru" ditekan.
      * Membuka jendela form tambah kendaraan.
      */
     @FXML
     protected void handleAddNewVehicle() {
         try {
-            // 1. Muat file FXML untuk form
             FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("view/add-vehicle-view.fxml"));
             Parent root = loader.load();
-
-            // 2. Dapatkan controller dari form dan berikan akses ke vehicleList
             AddVehicleController controller = loader.getController();
             controller.setVehicleList(vehicleList);
 
-            // 3. Buat dan tampilkan jendela (Stage) baru sebagai dialog
             Stage stage = new Stage();
             stage.setTitle("Tambah Kendaraan Baru");
             stage.setScene(new Scene(root));
-            stage.initModality(Modality.APPLICATION_MODAL); // Blokir jendela utama
+            stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(vehicleTable.getScene().getWindow());
-            stage.showAndWait(); // Tampilkan dan tunggu sampai ditutup
+            stage.showAndWait();
+
+            // Setelah form ditutup, simpan data terbaru ke file
+            saveDataToFile();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -124,18 +125,66 @@ public class MainViewController {
     }
 
     /**
-     * Metode untuk memuat data contoh kendaraan ke dalam tabel.
+     * Menyimpan data dari vehicleList ke file vehicles.csv.
      */
-    private void loadVehicleData() {
-        // Membersihkan data lama sebelum memuat yang baru
+    private void saveDataToFile() {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(DATA_FILE))) {
+            for (Vehicle vehicle : vehicleList) {
+                StringBuilder line = new StringBuilder();
+                line.append(vehicle.getNomorPolisi()).append(",");
+                line.append(vehicle.getMerek()).append(",");
+                line.append(vehicle.getModel()).append(",");
+                line.append(vehicle.getTahun()).append(",");
+                line.append(vehicle.getStatus());
+
+                if (vehicle instanceof PassengerCar) {
+                    PassengerCar car = (PassengerCar) vehicle;
+                    line.append(",PASSENGER,").append(car.getKapasitasPenumpang());
+                } else if (vehicle instanceof Truck) {
+                    Truck truck = (Truck) vehicle;
+                    line.append(",TRUCK,").append(truck.getKapasitasAngkutTon());
+                }
+                bw.write(line.toString());
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Memuat data dari file vehicles.csv ke dalam vehicleList.
+     */
+    private void loadDataFromFile() {
         vehicleList.clear();
+        try (BufferedReader br = new BufferedReader(new FileReader(DATA_FILE))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",");
+                String nopol = data[0];
+                String merek = data[1];
+                String model = data[2];
+                int tahun = Integer.parseInt(data[3]);
+                String status = data[4];
+                String type = data[5];
 
-        // Menambahkan data contoh
-        vehicleList.add(new PassengerCar("L 1234 AB", "Toyota", "Avanza", 2022, 7));
-        vehicleList.add(new Truck("B 9876 CD", "Mitsubishi", "Fuso", 2020, 10));
-        vehicleList.add(new PassengerCar("W 5555 XY", "Honda", "Brio", 2023, 5));
-
-        // Menampilkan data ke tabel
+                Vehicle vehicle = null;
+                if ("PASSENGER".equals(type)) {
+                    int kapasitas = Integer.parseInt(data[6]);
+                    vehicle = new PassengerCar(nopol, merek, model, tahun, kapasitas);
+                } else if ("TRUCK".equals(type)) {
+                    double kapasitas = Double.parseDouble(data[6]);
+                    vehicle = new Truck(nopol, merek, model, tahun, kapasitas);
+                }
+                
+                if (vehicle != null) {
+                    vehicle.updateStatus(status);
+                    vehicleList.add(vehicle);
+                }
+            }
+        } catch (IOException | ArrayIndexOutOfBoundsException | NumberFormatException e) {
+            System.out.println("File data tidak ditemukan atau rusak, memulai dengan daftar kosong.");
+        }
         vehicleTable.setItems(vehicleList);
     }
 }

@@ -12,7 +12,7 @@ public class Vehicle {
         this.merek = merek;
         this.model = model;
         this.tahun = tahun;
-        this.status = "Tersedia"; // Status awal selalu tersedia [cite: 20]
+        this.status = "Tersedia"; // Status awal selalu tersedia
     }
 
     // Method untuk menampilkan detail dasar kendaraan
@@ -23,7 +23,7 @@ public class Vehicle {
     }
 
     // Method untuk mengubah status kendaraan
-    public void updateStatus(String newStatus) { // Sesuai UML [cite: 68]
+    public void updateStatus(String newStatus) { // Sesuai UML
         this.status = newStatus;
     }
 
@@ -33,5 +33,20 @@ public class Vehicle {
 
     public String getStatus() {
         return status;
+    }
+
+    // --- PENAMBAHAN DIMULAI DI SINI ---
+    // Getter yang ditambahkan agar data bisa tampil di TableView
+
+    public String getMerek() {
+        return merek;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public int getTahun() {
+        return tahun;
     }
 }
